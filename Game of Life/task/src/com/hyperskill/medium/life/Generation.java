@@ -1,29 +1,33 @@
 package com.hyperskill.medium.life;
 
+import java.io.IOException;
 import java.util.Random;
 
 public class Generation {
     private final int sizeUniverse;
-    private final int numberOfGeneration;
-    private final Random random;
+    private final Random random = new Random();
 
-    Generation(int sizeUniverse, Random random, int numberOfGeneration) {
+    Generation(int sizeUniverse) {
         this.sizeUniverse = sizeUniverse;
-        this.random = random;
-        this.numberOfGeneration = numberOfGeneration;
     }
 
     private void printGeneration(Boolean[][] print) {
         for (int i = 0; i < sizeUniverse; i++) {
             for (int j = 0; j < sizeUniverse; j++) {
-                if (print[i][j] == null) {
-                    System.out.println("Error i = " + i + " j = " + j);
-                }
-                else {
-                    System.out.print(print[i][j] ? "O" : " ");
-                }
+                System.out.print(print[i][j] ? "O" : " ");
             }
             System.out.println();
+        }
+    }
+
+    public static void clearScreen() {
+        try {
+            if (System.getProperty("os.name").contains("Windows"))
+                new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+            else
+                Runtime.getRuntime().exec("clear");
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
@@ -31,6 +35,7 @@ public class Generation {
         int aliveCells = 0;
         int neighbourI;
         int neighbourJ;
+        int numberOfAlive = 0;
         Boolean[][] nextGeneration = new Boolean[sizeUniverse][sizeUniverse];
         for (int i = 0; i < sizeUniverse; i++) {
             for (int j = 0; j < sizeUniverse; j++) {
@@ -71,9 +76,11 @@ public class Generation {
                 } else {
                     nextGeneration[i][j] = aliveCells == 3;
                 }
+                if (nextGeneration[i][j]) ++numberOfAlive;
                 aliveCells = 0;
             }
         }
+        System.out.println("Alive: " + numberOfAlive);
         return nextGeneration;
     }
 
@@ -84,11 +91,22 @@ public class Generation {
                 universe[i][j] = random.nextBoolean();
             }
         }
-        if (numberOfGeneration != 0) {
-            for (int i = 1; i <= numberOfGeneration; i++) {
-                universe = createGeneration(universe);
+        int i = 1;
+        while (i != 100) {
+            System.out.println("Generation #" + i);
+            universe = createGeneration(universe);
+            printGeneration(universe);
+            try {
+                if (System.getProperty("os.name").contains("Windows")) {
+                    Thread.sleep(300);
+                    new ProcessBuilder("cmd", "/c", "cls").inheritIO().start().waitFor();
+
+                } else {
+                    Runtime.getRuntime().exec("clear");
+                }
+            } catch (IOException | InterruptedException ignored) {
             }
+            i++;
         }
-        printGeneration(universe);
     }
 }
